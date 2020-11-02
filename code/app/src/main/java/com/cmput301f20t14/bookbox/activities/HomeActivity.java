@@ -32,8 +32,11 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.Spinner;
+import android.widget.SpinnerAdapter;
 import android.widget.Toast;
 import android.view.MenuItem;
 
@@ -71,7 +74,7 @@ import java.util.ArrayList;
  * @author Carter Sabadash
  * @author Alex Mazzuca
  * @author Olivier Vadiavaloo
- * @version 2020.10.30
+ * @version 2020.11.01
  * @see NotificationsActivity
  * @see ProfileActivity
  * @see ListsActivity
@@ -86,6 +89,8 @@ public class HomeActivity extends AppCompatActivity {
     private String username;
     private BookList bookAdapter;
     private ArrayList<Book> books;
+    private String currentFilter = "All";
+    private ArrayList<Book> filteredBooks;
     private ListView bookList;
     FirebaseFirestore database;
 
@@ -105,13 +110,15 @@ public class HomeActivity extends AppCompatActivity {
 
         // Initialize book list
         books = new ArrayList<>();
+        filteredBooks = new ArrayList<>();
 
         // Initialize book adapter
-        bookAdapter = new BookList(HomeActivity.this, books);
+        bookAdapter = new BookList(HomeActivity.this, filteredBooks);
 
         // Set adapter
         bookList.setAdapter(bookAdapter);
 
+        setUpBookFilter();
         firebaseInitBookListener();
         bottomNavigationView();
         setUpScanningButton();
@@ -251,7 +258,7 @@ public class HomeActivity extends AppCompatActivity {
      * owned by the user is always correct
      * @author Carter Sabadash
      * @author Olivier Vadiavaloo
-     * @version 2020.10.27
+     * @version 2020.11.01
      */
     private void firebaseInitBookListener(){
         final CollectionReference collectionReference = database
@@ -302,11 +309,9 @@ public class HomeActivity extends AppCompatActivity {
                                                         lent_to,
                                                         null
                                                 );
-
                                                 // Add book to book list
                                                 books.add(book);
-
-                                                bookAdapter.notifyDataSetChanged();
+                                                filterBooks(currentFilter);
                                             }
                                         }
                                     }
@@ -320,4 +325,57 @@ public class HomeActivity extends AppCompatActivity {
             }
         });
     }
+
+    /**
+     * This initializes the book filter dropdown menu at the top of the page
+     * @author Carter Sabadash
+     * @version 2020.11.01
+     */
+    void setUpBookFilter(){
+        Spinner bookFilterSpinner = findViewById(R.id.status_filter_spinner);
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+                R.array.filter_statuses, android.R.layout.simple_spinner_item);
+
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        bookFilterSpinner.setAdapter(adapter);
+
+        bookFilterSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                String filter = adapterView.getItemAtPosition(i).toString();
+                filterBooks(filter);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+    }
+
+    /**
+     * This filters books according to the given filter, and updates the display to only
+     * show filtered books
+     * @param filter The filter: "All", "Requested", "Accepted", "Available", "Borrowed"
+     * @author Carter Sabadash
+     * @version 2020.11.01
+     */
+    void filterBooks(String filter){
+        currentFilter = filter;
+        filteredBooks.clear();
+
+        if (filter.equals("All")){
+            filteredBooks.addAll(books);
+        } else {
+            // now go through and add correct books to filteredBooks
+            for (Book book : books) {
+                if (book.getStatusString().equals(filter)) {
+                    filteredBooks.add(book);
+                }
+            }
+        }
+
+        bookAdapter.notifyDataSetChanged();
+    }
 }
+

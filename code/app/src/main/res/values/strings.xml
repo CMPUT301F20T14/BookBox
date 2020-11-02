@@ -71,10 +71,10 @@
     <string name="request">Request</string>
 
     <string-array name="filter_statuses">
-        <item>Filter by</item>
-        <item>Accepted</item>
+        <item>All</item>
         <item>Available</item>
-        <item>Borrowed</item>
         <item>Requested</item>
+        <item>Accepted</item>
+        <item>Borrowed</item>
     </string-array>
 </resources>

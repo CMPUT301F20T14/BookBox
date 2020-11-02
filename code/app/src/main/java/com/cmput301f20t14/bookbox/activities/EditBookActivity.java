@@ -50,6 +50,11 @@ public class EditBookActivity extends AppCompatActivity {
         authorEditText = (EditText) findViewById(R.id.edit_author_editText);
         isbnEditText = (EditText) findViewById(R.id.edit_isbn_editText);
 
+        // make them show current data for the book
+        titleEditText.setText(book.getTitle());
+        authorEditText.setText(book.getAuthor());
+        isbnEditText.setText(book.getIsbn());
+
         // Get button views
         updateBtn = (Button) findViewById(R.id.edit_book_update_button);
         viewRequests = (Button) findViewById(R.id.edit_book_requests_button);
